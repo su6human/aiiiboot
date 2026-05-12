@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Twin Career Engine</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>🧑‍💻 Актан Кадыркулов</h3>
+                <p>🎓 Студент IT + Бармен</p>
+                <p>⚙️ <i>Digital Twin v1.0 (API)</i></p>
+            </div>
+            
+            <div class="api-settings">
+                <h4>🔑 Настройки AI</h4>
+                <input type="password" id="groq-api-key" placeholder="Groq API Key">
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-target="home">🏠 Home</button>
+                <button class="nav-btn" data-target="prediction">📈 Career Prediction</button>
+                <button class="nav-btn" data-target="radar">⚖️ Balance Wheel</button>
+                <button class="nav-btn" data-target="chat">💬 Live Coach</button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Section: Home -->
+            <section id="home" class="page-section active">
+                <h1>Мой Digital Twin Career Engine</h1>
+                <p class="subtitle">📍 Актан Кадыркулов • Бишкек</p>
+                <div class="greeting">
+                    🤖 <b>Я твой личный AI-карьерный двойник. Давай расти вместе!</b>
+                </div>
+                
+                <h3 style="color:white; margin-top: 20px;">🎯 Твоя главная карьерная цель</h3>
+                <div class="job-card" id="home-top-job">
+                    <h2 class="job-title">Загрузка...</h2>
+                    <p class="job-desc">Подключаемся к Backend API...</p>
+                </div>
+            </section>
+
+            <!-- Section: Career Prediction -->
+            <section id="prediction" class="page-section">
+                <h1>📈 Career Prediction</h1>
+                <p style="color:var(--text-muted); margin-bottom: 20px;">Топ профессий на основе твоего текущего уровня (Figma, HTML/CSS, Hospitality).</p>
+                <div class="job-grid" id="prediction-grid">
+                    <div style="color:white;">Загрузка данных...</div>
+                </div>
+                <button class="action-btn" id="refresh-prediction">🔄 Обновить прогноз</button>
+            </section>
+
+            <!-- Section: Balance Wheel -->
+            <section id="radar" class="page-section">
+                <h1>⚖️ Balance Wheel (Skills Radar)</h1>
+                <p style="color:var(--text-muted); margin-bottom: 20px;">Анализ распределения твоих Hard и Soft навыков.</p>
+                <div id="radar-chart" style="width:100%; height:500px;"></div>
+            </section>
+
+            <!-- Section: Live Coach -->
+            <section id="chat" class="page-section">
+            <div class="chat-header">
+                <h1>💬 Live Coach</h1>
+                <button id="clear-chat" class="action-btn small" style="background: rgba(255, 77, 77, 0.2); color: #ff4d4d; border: 1px solid #ff4d4d;">Очистить всё</button>
+            </div>
+            
+            <div class="chat-layout-wrapper">
+                <!-- Sidebar -->
+                <div class="chat-sessions-sidebar">
+                    <button id="new-chat-btn" class="new-chat-btn">+ Новый чат</button>
+                    <div id="sessions-list" class="sessions-nav">
+                        <!-- Sessions -->
+                    </div>
+                </div>
+
+                <!-- Main Chat -->
+                <div class="chat-active-window">
+                    <div id="chat-box" class="chat-messages-container">
+                        <!-- Messages -->
+                    </div>
+                    
+                    <div class="chat-footer">
+                        <div class="input-wrapper">
+                            <input type="text" id="chat-input" placeholder="Спроси коуча о чём угодно..." autocomplete="off">
+                            <button id="send-btn" class="send-icon-btn">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

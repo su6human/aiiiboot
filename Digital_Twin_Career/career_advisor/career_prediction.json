@@ -1,0 +1,23 @@
+{
+  "top_3_jobs": [
+    {
+      "title": "UI/UX Designer",
+      "match_percent": 84.5
+    },
+    {
+      "title": "Graphic Designer",
+      "match_percent": 78.2
+    },
+    {
+      "title": "Creative Technologist",
+      "match_percent": 75.6
+    }
+  ],
+  "recommended_path": "Game UI/UX Designer / Interactive Designer",
+  "priority_skills_to_learn": [
+    "Godot advanced",
+    "JavaScript",
+    "Animation principles",
+    "Responsive Design"
+  ]
+}

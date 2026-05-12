@@ -1,0 +1,9 @@
+streamlit
+fastapi
+uvicorn
+gunicorn
+pydantic
+groq
+scikit-learn
+pandas
+python-dotenv
