@@ -39,25 +39,24 @@ st.markdown(f"""
     [data-testid="stSidebar"] {{ background-color: {sidebar_bg}; border-right: 1px solid {border_color}; }}
     h1 {{ background: linear-gradient(90deg, {accent_1} 0%, {accent_2} 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800 !important; }}
     .job-card {{ background: {card_bg}; border: 1px solid {border_color}; padding: 20px; border-radius: 16px; margin-bottom: 15px; color: {text_color}; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }}
-    .stButton>button {{ background: linear-gradient(90deg, {accent_1} 0%, {accent_2} 100%); color: white !important; border-radius: 10px; font-weight: 700; border: none; width: 100%; }}
+    .stButton>button {{ background: linear-gradient(90deg, {accent_1} 0%, {accent_2} 100%); color: white !important; border-radius: 10px; font-weight: 700; border: none; width: 100%; transition: 0.3s; }}
+    .stButton>button:hover {{ transform: scale(1.02); box-shadow: 0 4px 15px {accent_1}55; }}
+    div[data-testid="stChatMessage"] {{ border-radius: 15px !important; margin-bottom: 10px !important; border: 1px solid {border_color} !important; }}
+    div[data-testid="stChatMessage"]:has(svg[aria-label="user"]) {{ border-right: 4px solid {accent_1} !important; background: {msg_user_bg} !important; }}
+    div[data-testid="stChatMessage"]:has(svg[aria-label="assistant"]) {{ border-left: 4px solid {accent_2} !important; background: {msg_ai_bg} !important; }}
     p, span, label, .stMarkdown, .stText, h2, h3 {{ color: {text_color} !important; }}
 </style>
 """, unsafe_allow_html=True)
 
-# --- RELATIVE DATA LOADING (Fix for Render) ---
+# --- RELATIVE DATA LOADING ---
 def load_data():
-    # Ищем файл относительно текущего скрипта
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     p = os.path.join(base_dir, "career_advisor", "career_prediction.json")
-    
     if os.path.exists(p):
         try:
             with open(p, "r", encoding="utf-8") as f: return json.load(f)
-        except Exception as e:
-            st.error(f"Ошибка чтения файла: {e}")
-            return None
+        except: return None
     return None
-
 data = load_data()
 
 # --- Sidebar ---
@@ -82,8 +81,7 @@ user_context = "Студент IT, бармен, UI/UX."
 if data: 
     missing = data.get('priority_skills_to_learn', [])
     user_context += f" Актуальные цели: {', '.join(missing)}."
-
-SYSTEM_PROMPT = f"Ты — AI-коуч Актана. Контекст: {user_context}."
+SYSTEM_PROMPT = f"Ты — Digital Twin Career Engine Актана. Контекст: {user_context}."
 
 # --- PAGES ---
 if "Home" in page:
@@ -97,8 +95,6 @@ elif "Prediction" in page:
     if data and "top_3_jobs" in data:
         for job in data["top_3_jobs"]:
             st.markdown(f"<div class='job-card'><h3 style='color:{accent_1};'>{job['title']}</h3><h2 style='font-size:2.5rem;'>{job['match_percent']}%</h2></div>", unsafe_allow_html=True)
-    else:
-        st.warning("⚠️ Файл career_prediction.json не найден. Проверьте структуру папок в репозитории.")
 
 elif "Wheel" in page:
     st.title(f"{chr(0x2696)} Balance Wheel")
@@ -109,21 +105,69 @@ elif "Wheel" in page:
 
 elif "Coach" in page:
     st.title(f"{chr(0x1F4AC)} Live Coach")
-    if not st.session_state.groq_api_key: st.warning("Введите API Key!")
-    else:
-        if "chats" not in st.session_state: st.session_state.chats = {"default": {"title": "Чат 1", "messages": []}}
-        cur = st.session_state.chats["default"]
-        for m in cur["messages"]:
-            with st.chat_message(m["role"]): st.markdown(m["content"])
-        if prompt := st.chat_input("Спроси коуча..."):
-            cur["messages"].append({"role": "user", "content": prompt})
-            try:
-                client = Groq(api_key=st.session_state.groq_api_key)
-                resp = client.chat.completions.create(model="llama-3.3-70b-versatile", messages=[{"role": "system", "content": SYSTEM_PROMPT}] + cur["messages"])
-                ai_msg = resp.choices[0].message.content
-                cur["messages"].append({"role": "assistant", "content": ai_msg})
-                st.rerun()
-            except Exception as e: st.error(f"Ошибка: {e}")
+    
+    # --- Multi-Chat System State ---
+    if "chats" not in st.session_state: 
+        st.session_state.chats = {"default": {"title": "Чат 1", "messages": []}}
+    if "current_chat_id" not in st.session_state: 
+        st.session_state.current_chat_id = "default"
+
+    with st.sidebar:
+        st.divider()
+        st.markdown(f"### {chr(0x1F4AC)} Управление чатами")
+        if st.button(f"{chr(0x2795)} Новый чат"):
+            new_id = str(uuid.uuid4())[:8]
+            st.session_state.chats[new_id] = {"title": "Новый чат", "messages": []}
+            st.session_state.current_chat_id = new_id
+            st.rerun()
+        
+        # Chat List & Switch
+        for cid in list(st.session_state.chats.keys()):
+            col1, col2 = st.columns([0.8, 0.2])
+            with col1:
+                if st.button(f"{chr(0x1F4AC)} {st.session_state.chats[cid]['title']}", key=f"switch_{cid}"):
+                    st.session_state.current_chat_id = cid
+                    st.rerun()
+            with col2:
+                if st.button(f"{chr(0x1F5D1)}", key=f"del_{cid}"):
+                    if len(st.session_state.chats) > 1:
+                        del st.session_state.chats[cid]
+                        if st.session_state.current_chat_id == cid:
+                            st.session_state.current_chat_id = list(st.session_state.chats.keys())[0]
+                        st.rerun()
+                    else:
+                        st.session_state.chats["default"] = {"title": "Чат 1", "messages": []}
+                        st.session_state.current_chat_id = "default"
+                        st.rerun()
+
+    if not st.session_state.groq_api_key:
+        st.warning("⚠️ Введите API Key в боковой панели, чтобы начать чат.")
+    
+    cur = st.session_state.chats[st.session_state.current_chat_id]
+    for m in cur["messages"]:
+        with st.chat_message(m["role"]): st.markdown(m["content"])
+
+    if prompt := st.chat_input("Напиши коучу...", disabled=not st.session_state.groq_api_key):
+        if cur["title"] == "Новый чат": cur["title"] = prompt[:20] + "..."
+        cur["messages"].append({"role": "user", "content": prompt})
+        with st.chat_message("user"): st.markdown(prompt)
+        try:
+            client = Groq(api_key=st.session_state.groq_api_key)
+            resp = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "system", "content": SYSTEM_PROMPT}] + cur["messages"],
+                stream=True
+            )
+            with st.chat_message("assistant"):
+                placeholder = st.empty(); full_resp = ""
+                for chunk in resp:
+                    if chunk.choices[0].delta.content:
+                        full_resp += chunk.choices[0].delta.content
+                        placeholder.markdown(full_resp + "▌")
+                placeholder.markdown(full_resp)
+            cur["messages"].append({"role": "assistant", "content": full_resp})
+            st.rerun()
+        except Exception as e: st.error(f"Ошибка Groq: {e}")
 
 elif "Roast" in page:
     st.title(f"{chr(0x1F525)} Roast My Stack")
